@@ -4,7 +4,7 @@
 ## Global variables
 os="$( awk -F '=' '/^ID=/ {print $2}' /etc/os-release 2>&- )"
 
-if [ "${os}" == "arch" ] \
+if [ "${os}" == "aarch64" ] \
 || [ "${os}" == "manjaro" ]\
 || [ "${os}" == "blackarch" ] \
 || [ "${os}" == "debian" ] \
@@ -90,7 +90,7 @@ func_title(){
   echo "                 os = ${os}"
   echo "          osversion = ${osversion}"
   echo "       osmajversion = ${osmajversion}"
-  echo "               arch = ${arch}"
+  echo "               arch = {aarch64}"
   echo "           trueuser = ${trueuser}"
   echo "   userprimarygroup = ${userprimarygroup}"
   echo "        userhomedir = ${userhomedir}"
@@ -282,7 +282,7 @@ func_package_deps(){
     || [ "${os}" == "kali" ] \
     || [ "${os}" == "parrot" ]; then
       echo -e "\n\n [*] ${YELLOW}Installing Python's pycrypto (via apt)...${RESET}\n"
-      sudo ${arg} apt-get install -y python3-crypto
+      pip3 install pycrypto
       if [[ "$?" -ne "0" ]]; then
         msg="Failed with installing dependencies (6): $?"
         errors="${errors}\n${msg}"
@@ -359,7 +359,7 @@ func_package_deps(){
     fi
 
     sudo ${arg} apt-get install -y mingw-w64 monodevelop mono-mcs unzip ruby golang wget git \
-      python python-crypto python-pefile python-pip ca-certificates python3-pip winbind python3-crypto
+      python python-pefile python-pip ca-certificates python3-pip winbind
     if [[ "$?" -ne "0" ]]; then
       msg="Failed with installing dependencies (2): $?"
       errors="${errors}\n${msg}"
@@ -370,7 +370,7 @@ func_package_deps(){
   || [ "${os}" == "fedora" ] \
   || [ "${os}" == "rhel" ]; then
     sudo ${arg} dnf -y install mingw64-binutils mingw64-cpp mingw64-gcc mingw64-gcc-c++ mono-tools-monodoc monodoc \
-      monodevelop mono-tools mono-core unzip ruby golang wget git python python-crypto python-pefile \
+      monodevelop mono-tools mono-core unzip ruby golang wget git python python-pefile \
       python-pip ca-certificates msttcore-fonts-installer python3-pip winbind
     if [[ "$?" -ne "0" ]]; then
       msg="Failed with installing dependencies (3): $?"
@@ -380,7 +380,7 @@ func_package_deps(){
 
   elif [ "${os}" == "blackarch" ]; then
     sudo pacman -Sy ${arg} --needed mingw-w64-binutils mingw-w64-crt mingw-w64-gcc mingw-w64-headers mingw-w64-winpthreads \
-      mono mono-tools mono-addins python2-pip wget unzip ruby python python2 python-crypto gcc-go ca-certificates base-devel python-pip krb5 samba
+      mono mono-tools mono-addins python2-pip wget unzip ruby python python2 gcc-go ca-certificates base-devel python-pip krb5 samba
     if [[ "$?" -ne "0" ]]; then
       msg="Failed with installing dependencies (4): $?"
       errors="${errors}\n${msg}"
@@ -413,7 +413,7 @@ func_package_deps(){
         fi
       fi
     }
-    sudo pacman -Sy ${arg} --needed mono mono-tools mono-addins python2-pip wget unzip ruby python python2 python-crypto gcc-go ca-certificates base-devel python-pip krb5 samba
+    sudo pacman -Sy ${arg} --needed mono mono-tools mono-addins python2-pip wget unzip ruby python python2 gcc-go ca-certificates base-devel python-pip krb5 samba
     if [ $(id -u) -eq 0 ]; then
       echo "\n\n Insert your non-root user:\n"
       read $nonrootuser
@@ -599,7 +599,8 @@ func_package_deps(){
       echo -e " ${RED}[ERROR] ${msg}${RESET}\n"
     fi
   elif [ "${os}" == "arch" ] \
-  || [ "${os}" == "blackarch" ]; then
+  || [ "${os}" == "blackarch" ] \
+  || [ "${os}" == "manjaro" ]; then
     echo -e "\n\n [*] ${YELLOW}Installing Wine 32-bit on x86_64 System (via PACMAN)${RESET}\n"
     if grep -Fxq "#[multilib]" /etc/pacman.conf; then
       echo "[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
@@ -810,7 +811,7 @@ func_python_deps(){
     echo -e " ${RED}[ERROR] ${msg}${RESET}\n"
   fi
 
-  sudo -u "${trueuser}" WINEPREFIX="${winedir}" wine "${winedir}/drive_c/Python34/python.exe" "-m" "pip" "install" "pefile"
+  sudo -u "${trueuser}" WINEPREFIX="${winedir}" wine "${winedir}/drive_c/Python34/python.exe" "-m" "pip" "install" "-Iv" "pefile==2019.4.18"
   tmp="$?"
   if [[ "${tmp}" -ne "0" ]]; then
     msg="Failed to run (wine) Python pip pefile... Exit code: ${tmp}"
